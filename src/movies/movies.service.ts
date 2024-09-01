@@ -7,13 +7,18 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { Request } from 'express';
 
-import { CreateMovieDto } from './dto/create-movie.dto';
-import { UpdateMovieDto } from './dto/update-movie.dto';
+import { AddMovieToUserListDto, CreateMovieDto, UpdateMovieDto } from './dto';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class MoviesService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger('MoviesService');
+
+  constructor(private readonly authService: AuthService) {
+    super();
+  }
 
   async onModuleInit() {
     await this.$connect();
@@ -66,5 +71,25 @@ export class MoviesService extends PrismaClient implements OnModuleInit {
     await this.findOne(id);
 
     await this.movie.update({ where: { id }, data: { isActive: false } });
+  }
+
+  async addMovieToUserList(
+    request: Request,
+    { moviesIds }: AddMovieToUserListDto,
+  ) {
+    const userId = request['user'].sub;
+
+    await this.authService.getUser(userId);
+
+    for (const movieId of moviesIds) {
+      await this.findOne(movieId);
+    }
+
+    const newUserMovies = moviesIds.map((movieId) => ({
+      userId,
+      movieId,
+    }));
+
+    await this.userMovie.createMany({ data: newUserMovies });
   }
 }
