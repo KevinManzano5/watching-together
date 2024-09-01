@@ -15,5 +15,6 @@ import { envs } from '../common/config/envs';
       signOptions: { expiresIn: '3600s' },
     }),
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

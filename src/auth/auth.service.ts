@@ -9,6 +9,7 @@ import { PrismaClient, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
+import { isUUID } from 'class-validator';
 
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
 
@@ -71,8 +72,8 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   async getUser(param: string) {
     let user: User;
 
-    if (!isNaN(+param)) {
-      user = await this.user.findUnique({ where: { id: +param } });
+    if (isUUID(param)) {
+      user = await this.user.findFirst({ where: { id: param } });
     } else {
       user = await this.user.findUnique({ where: { email: param } });
     }
@@ -85,7 +86,14 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
     delete user.password;
 
-    return user;
+    const movies = await this.userMovie.findMany({
+      where: { userId: user.id },
+    });
+
+    return {
+      ...user,
+      movies: movies.map((movie) => movie.id),
+    };
   }
 
   async profile(request: Request) {
