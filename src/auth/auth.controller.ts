@@ -14,7 +14,7 @@ import { Request as request } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginUserDto, RegisterUserDto, UpdateUserDto } from './dto';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './guards';
 
 @Controller('auth')
 export class AuthController {
