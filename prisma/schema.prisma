@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id        String  @id @default(uuid())
   firstName String
@@ -21,10 +26,11 @@ model User {
   password  String
   isActive  Boolean @default(true)
 
+  role   Role        @default(USER)
+  movies UserMovie[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  movies UserMovie[]
 }
 
 model Movie {
@@ -32,10 +38,10 @@ model Movie {
   name     String  @unique
   isActive Boolean @default(true)
 
+  users UserMovie[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  users UserMovie[]
 }
 
 model UserMovie {
